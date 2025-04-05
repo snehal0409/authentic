@@ -1,37 +1,58 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { editProfile,logout ,changePassword} from "@/app/actions/auth"
 
-export function Profile() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+type ProfileProps = {
+  profile: {
+    username: string;
+    email: string;
+  };
+};
+
+export function Profile({ profile }: ProfileProps) {
+  const [username, setName] = useState(profile.username);
+  const [email, setEmail] = useState(profile.email);
   const [password, setPassword] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const router = useRouter()
 
   const handleEdit = () => {
     setIsEditing(!isEditing);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsEditing(false);
-    console.log("Profile updated:", { name, email });
+    try {
+      await editProfile({ username, email });
+      console.log("Profile updated:", { username, email });
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+    }
   };
 
   const handleChangePassword = () => {
     setIsChangingPassword(!isChangingPassword);
   };
 
-  const handleSavePassword = () => {
+  const handleSavePassword = async () => {
     setIsChangingPassword(false);
-    console.log("Password updated:", password);
+    try {
+      await changePassword(password);
+      console.log("Password updated successfully");
+    } catch (error) {
+      console.error("Failed to change password:", error);
+    }
   };
 
-  const handleLogout = () => {
-    console.log("User logged out");
-    // Implement logout logic such as removing authentication tokens, redirecting, etc.
+  const handleLogout = async() => {
+    await logout()
+    router.push('/')
+    
+    
   };
-
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <div className="bg-white p-8 rounded shadow-md w-96">
@@ -45,12 +66,12 @@ export function Profile() {
               className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="name"
               type="text"
-              value={name}
+              value={username}
               onChange={(e) => setName(e.target.value)}
               required
             />
           ) : (
-            <p className="text-gray-700">{name}</p>
+            <p className="text-gray-700">{username}</p>
           )}
         </div>
         <div className="mb-4">
@@ -99,12 +120,14 @@ export function Profile() {
         </button>
         <button
           className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
-          onClick={handleLogout}
+          onClick={handleLogout }
         >
-          Logout
+          Logout 
         </button>
       </div>
     </div>
   );
 }
+
+
 

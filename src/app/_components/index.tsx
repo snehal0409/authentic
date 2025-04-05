@@ -1,50 +1,33 @@
 "use client";
 
 import { useState, FormEvent, ChangeEvent } from "react";
-import { useRouter } from "next/navigation"; // Use 'next/navigation' in Next.js App Router
+import { useRouter } from "next/navigation";
+import { login} from '@/app/actions/auth'; 
 
 export function LoginForm() {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+ 
   const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-  const router = useRouter(); // Works correctly in App Router
+  const router = useRouter(); 
 
-  interface LoginResponse {
-    message?: string;
-  }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-
+    const formData = new FormData(e.currentTarget);
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (res.ok) {
-        router.push("/profile"); // Redirect after successful login
-      } else {
-        const data: LoginResponse = await res.json();
-        setError(data.message || "Login failed");
-      }
-    } catch (err) {
-      setError("Network error. Please try again.");
-      console.error("Login error:", err);
-    } finally {
-      setLoading(false);
+      await login(formData);
+  
+        setTimeout(() => {
+          router.push('/profile');
+        }, 1500);
+    } catch (err: any) {
+      setError(err.message || 'Registration failed. Please try again.');
+      console.error(err);
     }
+
+
   };
-
-  const handleChange = (setter: React.Dispatch<React.SetStateAction<string>>) => 
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setter(e.target.value);
-    };
-
+ 
+  
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md w-full max-w-sm">
@@ -54,9 +37,9 @@ export function LoginForm() {
           <label htmlFor="emailInput" className="block mb-1">Email</label>
           <input
             type="email"
+            name="email"
+
             id="emailInput"
-            value={email}
-            onChange={handleChange(setEmail)}
             className="w-full border px-3 py-2 rounded"
             required
           />
@@ -65,21 +48,17 @@ export function LoginForm() {
           <label htmlFor="passwordInput" className="block mb-1">Password</label>
           <input
             type="password"
+            name="password"
             id="passwordInput"
-            value={password}
-            onChange={handleChange(setPassword)}
             className="w-full border px-3 py-2 rounded"
             required
           />
         </div>
         <button
           type="submit"
-          className={`w-full bg-blue-500 text-white py-2 rounded mb-4 ${
-            loading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          disabled={loading}
+          className={`w-full bg-blue-500 text-white py-2 rounded mb-4 `}
         >
-          {loading ? "Logging in..." : "Login"}
+          Login
         </button>
         <p className="text-center text-sm text-gray-600">
           Don't have an account?{" "}
